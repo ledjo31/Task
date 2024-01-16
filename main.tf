@@ -9,7 +9,7 @@ terraform {
 # Define the local variables for the root module
 locals {
   ami_id = "ami-0c7217cdde317cfec" #t2.micro for testing purposes/ suggested c6i.4xlarge
-  vpc_id = "vpc-0e86b5e15b13e9e8b" #The VPC depends on the session
+  vpc_id = "vpc-0959ec618d590de8a" #The VPC varies
   ssh_user = "ubuntu"
   key_name = "ledjo"
   private_key_path = "/home/ledjo/Documents/Task/ledjo.pem"
