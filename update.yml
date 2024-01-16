@@ -1,0 +1,48 @@
+---
+- name: Update Polkadot to v1.2.0
+  hosts: polkadot_nodes
+  become: true
+  tasks:
+    - name: Download Polkadot v1.2.0
+      command: "wget -O /tmp/polkadot https://github.com/paritytech/polkadot/releases/download/v1.2.0/polkadot"
+
+    - name: Backup existing Polkadot binary (Optional)
+      command: "mv /usr/bin/polkadot /usr/bin/polkadot_backup"
+      ignore_errors: true
+
+    - name: Move Polkadot v1.2.0 to /usr/bin
+      command: "mv /tmp/polkadot /usr/bin/polkadot"
+
+    - name: Set executable permissions for Polkadot v1.2.0
+      file:
+        path: /usr/bin/polkadot
+        mode: +x
+
+    - name: Restart Polkadot service
+      systemd:
+        name: polkadot
+        state: restarted
+
+    - name: Update systemd service file for Polkadot (Optional)
+      copy:
+        content: |
+          [Unit]
+          Description=Polkadot Fullnode
+
+          [Service]
+          ExecStart=/usr/bin/polkadot
+          Restart=always
+
+          [Install]
+          WantedBy=default.target
+        dest: /etc/systemd/system/polkadot.service
+      notify: Reload systemd to recognize the new service file
+
+    - name: Reload systemd to recognize the new service file (Optional)
+      systemd:
+        daemon_reload: yes
+
+    - name: Start Polkadot service (Optional)
+      systemd:
+        name: polkadot
+        state: started

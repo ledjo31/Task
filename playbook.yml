@@ -1,0 +1,63 @@
+# playbook.yml
+---
+- name: Install and Start Polkadot
+  hosts: polkadot_nodes
+  become: true
+  tasks:
+    - name: Import the security@parity.io GPG key
+      command: gpg --recv-keys --keyserver hkps://keys.mailvelope.com 9D4B2B6EB8F97156D19669A9FF0812D491B96798
+
+    - name: Export the GPG key to /usr/share/keyrings/parity.gpg
+      command: sh -c 'gpg --export 9D4B2B6EB8F97156D19669A9FF0812D491B96798 > /usr/share/keyrings/parity.gpg'
+
+    - name: Add the Parity repository
+      apt_repository:
+        repo: 'deb [signed-by=/usr/share/keyrings/parity.gpg] https://releases.parity.io/deb release main'
+
+    - name: Update the package index
+      apt:
+        update_cache: yes
+
+    - name: Install the `parity-keyring` package
+      apt:
+        name: parity-keyring
+
+    - name: Download Polkadot v1.0.0
+      command: "wget -O /tmp/polkadot https://github.com/paritytech/polkadot/releases/download/v1.0.0/polkadot"
+
+    - name: Move Polkadot executable to /usr/bin
+      command: "mv /tmp/polkadot /usr/bin/polkadot"
+
+    - name: Set executable permissions
+      file:
+        path: /usr/bin/polkadot
+        mode: +x
+
+    - name: Run Polkadot
+      command: "/usr/bin/polkadot"
+      become: true
+
+    - name: Create systemd service file for Polkadot
+      copy:
+        content: |
+          [Unit]
+          Description=Polkadot Fullnode
+
+          [Service]
+          ExecStart=/usr/bin/polkadot
+          Restart=always
+
+          [Install]
+          WantedBy=default.target
+        dest: /etc/systemd/system/polkadot.service
+
+    - name: Reload systemd to recognize the new service file
+      systemd:
+        daemon_reload: yes
+
+    - name: Start and enable Polkadot service
+      systemd:
+        name: polkadot
+        state: started
+        enabled: yes
+
