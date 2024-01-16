@@ -12,7 +12,7 @@ locals {
   vpc_id = "vpc-0e86b5e15b13e9e8b"
   ssh_user = "ubuntu"
   key_name = "ledjo"
-  private_key_path = "/home/ledjo/Documents/Project/ledjo.pem"
+  private_key_path = "/home/ledjo/Documents/Task/ledjo.pem"
 }
 
 # Creates the EC2 Security Group with Inbound and Outbound rules.
